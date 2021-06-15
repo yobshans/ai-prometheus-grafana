@@ -1,0 +1,70 @@
+- name: Install prometheusoperator.0.47.0
+  shell: |
+    oc apply -f crd/prometheus-operator.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
+
+- name: Wait for prometheusoperator.0.47.0 to Succeeded
+  shell: |
+    oc get csv prometheusoperator.0.47.0 -n assisted-installer -o custom-columns=Phase:.status.phase --no-headers=true
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
+  register: prometheus_operator_phase
+  until: "'Succeeded' in prometheus_operator_phase.stdout"
+  delay: 30
+  retries: 10
+    
+- name: Install prometheus-prometheus-instance Pods
+  shell: |
+    oc apply -f crd/prometheus-instance.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
+
+- name: Wait for prometheus-prometheus-instance-0 to Running
+  shell: |
+    oc get pods prometheus-prometheus-instance-0 -n assisted-installer -o custom-columns=Status:.status.phase --no-headers=true
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
+  register: prometheus_instance_0
+  until: "'Running' in prometheus_instance_0.stdout"
+  delay: 30
+  retries: 10
+
+- name: Wait for prometheus-prometheus-instance-1 to Running
+  shell: |
+    oc get pods prometheus-prometheus-instance-1 -n assisted-installer -o custom-columns=Status:.status.phase --no-headers=true
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
+  register: prometheus_instance_1
+  until: "'Running' in prometheus_instance_1.stdout"
+  delay: 30
+  retries: 10
+
+- name: Install prometheus-service-account
+  shell: |
+    oc apply -f crd/prometheus-service-account.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
+
+- name: Install prometheus-route
+  shell: |
+    oc apply -f crd/prometheus-route.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
+
+- name: Get for Prometheus URL
+  shell: |
+    oc get route prometheus-route -n assisted-installer -o custom-columns=Name:.spec.host --no-headers=true
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
+  register: prometheus_route_url
+
+- name: Print Prometheus URL
+  debug:
+    msg: "Prometheus URL is https://{{ prometheus_route_url.stdout }}"
+
+- name: Install prometheus-service-account
+  shell: |
+    oc apply -f crd/assisted-service-monitor.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
