@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus-instance
+  namespace: assisted-installer
+  labels:
+    name: assisted-installer
+    app: assisted-service
+spec:
+  replicas: 2
+  serviceAccountName: prometheus-sa
+  securityContext: {}
+  serviceMonitorSelector: 
+    matchLabels:
+      name: assisted-service-monitor
+    ruleSelector: {}
