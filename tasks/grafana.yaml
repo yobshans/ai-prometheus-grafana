@@ -14,13 +14,13 @@
   delay: 30
   retries: 10
 
-- name: Install prometheus-prometheus-instance Pods
+- name: Install grafanas-instance
   shell: |
     oc apply -f crd/grafana-instance.yaml
   environment:
     KUBECONFIG: "{{ kubeconfig_file }}"
 
-- name: Wait for prometheus-prometheus-instance-0 to Running
+- name: Wait for grafana-deployment to Running
   shell: |
     oc describe pods -n assisted-installer grafana-deployment | grep ^Status: | head -1 | awk '{print $2}'
   environment:

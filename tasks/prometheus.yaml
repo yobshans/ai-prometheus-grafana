@@ -14,12 +14,18 @@
   delay: 30
   retries: 10
     
-- name: Install prometheus-prometheus-instance Pods
+- name: Install prometheus-prometheus-instance
   shell: |
     oc apply -f crd/prometheus-instance.yaml
   environment:
     KUBECONFIG: "{{ kubeconfig_file }}"
 
+- name: Install prometheus-service-account
+  shell: |
+    oc apply -f crd/prometheus-service-account.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig_file }}"
+    
 - name: Wait for prometheus-prometheus-instance-0 to Running
   shell: |
     oc get pods prometheus-prometheus-instance-0 -n assisted-installer -o custom-columns=Status:.status.phase --no-headers=true
@@ -39,12 +45,6 @@
   until: "'Running' in prometheus_instance_1.stdout"
   delay: 30
   retries: 10
-
-- name: Install prometheus-service-account
-  shell: |
-    oc apply -f crd/prometheus-service-account.yaml
-  environment:
-    KUBECONFIG: "{{ kubeconfig_file }}"
 
 - name: Install prometheus-route
   shell: |
