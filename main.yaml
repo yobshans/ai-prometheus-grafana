@@ -1,0 +1,15 @@
+---
+- name: Install monitoring for Assisted Service Operator
+  hosts: localhost
+  gather_facts: no
+  any_errors_fatal: true
+  vars:
+      kubeconfig_file: "/root/kubeconfig"
+
+  tasks:
+  - name: Install Prometheus Operator and configure Prometheus Instance
+    include_tasks: tasks/prometheus.yaml
+
+  - name: Install Grafana Operator and configure Grafana Data Source and Dashboard
+    include_tasks: tasks/grafana.yaml
+    
